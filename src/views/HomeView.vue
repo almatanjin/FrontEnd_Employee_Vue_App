@@ -1,31 +1,15 @@
 <template>
-  <div class="dropdown">
-    <a class="btn btn-dark dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown"
-      aria-expanded="false">
-      <span style="color:skyblue">{{ name }} </span>
-    </a>
-
-    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-      <nav>
-        <!-- <li><a class="dropdown-item" href="#"><router-link to="#"><span>{{name}} </span></router-link></a></li> -->
-
-        <li><a class="dropdown-item" href="#"><router-link to='/add'>Add Employee</router-link></a></li>
-        <li><a class="dropdown-item" href="#"><router-link to="/" @click="logout()">Logout</router-link></a></li>
-      </nav>
-    </ul>
-  </div>
+<navbar-vue />
   <div class="home">
-    <nav class="nav">
-     
-    </nav>
-    <img class="logo" src="https://mir-s3-cdn-cf.behance.net/user/276/fb1d57986087319.60bda861192ca.png" />
-
-    <h3 class="pad">Employees</h3>
+<h3 class="pad">Employees</h3>
+    <div class="spinner-border" role="status" v-if="load">
+      <span class="visually-hidden">Loading...</span>
+    </div>
   </div>
   <table class="table table-dark table-striped w-75">
     <thead>
       <tr>
-        <th>name</th>
+        <th>Name</th>
         <th>Position</th>
         <th>Address</th>
         <th>Contact Number</th>
@@ -33,46 +17,106 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in employee" :key="item">
+      <tr v-for="item in employee.data " :key="item">
         <td>{{ item.name }}</td>
         <td>{{ item.position ?? "Software Engineer" }}</td>
-        <td>{{ item.address ?? "N/A"}}</td>
+        <td>{{ item.address ?? "N/A" }}</td>
         <td>{{ item.contact }}</td>
-        <td><router-link :to="'/update/' + item.id"><button type="button" class="btn btn-light btn-sm">Update</button></router-link>
-          <button type="button" class="btn btn-danger btn-sm"
-          
-          @click="deleteEmployee(item.id)">Delete</button>
+        <td><router-link :to="'/update/' + item.id"><button type="button" class="btn btn-dark btn-sm mr-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"
+              id="button1"><span class="material-symbols-outlined">
+                edit
+              </span></button></router-link>
+          <button  class="btn btn-danger btn-sm" id="button2"
+            @click.prevent="deleteEmployee(item.id)"><span class="material-symbols-outlined">
+              delete
+            </span></button>
         </td>
       </tr>
     </tbody>
   </table>
+
+  <Bootstrap5Pagination align="center" :data="employee" @pagination-change-page="Employeeload"></Bootstrap5Pagination>
+
 </template>
 
 <script setup>
 
-import axios from 'axios';
-import {ref} from 'vue';
+import axios from '@/services/axios';
+import { ref } from 'vue';
 import { onMounted } from 'vue';
 import router from '@/router';
+import { createToaster } from "@meforma/vue-toaster";
+import navbarVue from '@/components/navbar.vue';
+import { Bootstrap5Pagination } from 'laravel-vue-pagination';
+const toaster = createToaster({});
 
-const employee=ref({})
+const employee = ref({})
+const name = ref('')
+const load = ref(true)
 
-async function Employeeload(){
-  let result = await axios.get("http://127.0.0.1/api/employees")
-  employee.value=result.data
+async function Employeeload(page = 1) {
+  let result = await axios.get("http://127.0.0.1/api/employees?page=" + page).then(data => {
+    employee.value = data.data
+    if (data.status == 200) {
+      load.value = false
+    }
+  })
+
 }
-onMounted(()=>{
+onMounted(() => {
+  load.value = true
   Employeeload()
+  const user = localStorage.getItem('user-info');
+
+  name.value = JSON.parse(user).name.toUpperCase()
+
+
 })
-async function deleteEmployee(id){
-  await axios.delete("http://127.0.0.1/api/employees/"+id)
+async function deleteEmployee(id) {
+  var delay = alertify.get('notifier','delay');
+ alertify.set('notifier','delay', 1);
+
+  alertify.confirm('', 'Are you sure you want to delete your account?', async function(){ 
+    const result = await axios.delete("http://127.0.0.1/api/employees/" + id)
+ 
+
+ 
+  
   Employeeload()
+  alertify.success('Deleted') }
+                , function(){ 
+                  Employeeload()
+                  alertify.error('Cancel')});
+
+  // const result = await axios.delete("http://127.0.0.1/api/employees/" + id)
+  // toaster.success(result.data, {
+  //   position: 'top-right',
+  //   duration: 1200
+  // })
+  // Employeeload()
 }
-function logout(){
-  alert('logout')
-  localStorage.removeItem('token');
-  router.push({name:'loginVue'})
-}
+// async function logout() {
+
+//   const result = await axios.post('http://127.0.0.1/api/logout')
+//     .catch(error => {
+//       toaster.error(error.message, {
+//         position: 'top-right',
+//         duration: 1200
+//       })
+//     })
+//   if (result.data.success) {
+
+    
+//     toaster.success(result.data.message, {
+//       position: 'top-right',
+//       duration: 1200
+//     })
+//     localStorage.removeItem('token');
+//     localStorage.removeItem('user-info')
+//   }
+
+//   router.push({ name: 'loginVue' })
+// }
 
 
 </script>
@@ -81,8 +125,24 @@ table {
   margin-left: auto;
   margin-right: auto;
 }
-.pad {
-  margin-top: 24px;
-  margin-bottom: 24px;
+
+
+#button1 {
+  margin-right: 10px;
 }
+
+.nav {
+  margin-top: 0px;
+  background-color: rgb(44, 42, 42);
+  padding: 20px;
+}
+
+.nav-link {
+  font-weight: bold;
+}
+
+.a {
+  margin-left: 170px;
+}
+
 </style>

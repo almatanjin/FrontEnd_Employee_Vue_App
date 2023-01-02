@@ -1,11 +1,5 @@
 <template>
-    <nav class="navbar navbar-light">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#"><router-link to="/"><button type="button" class="btn btn-dark">Back</button></router-link></a>
-  </div>
-</nav>
-    <img class="logo" src="https://mir-s3-cdn-cf.behance.net/user/276/fb1d57986087319.60bda861192ca.png" />
-    
+   <navbarVue />
     <h3 class="pad">Update Employee</h3>
     <form action="" class="add">
         <input type="text" placeholder="Enter Name" v-model="employee.name" />
@@ -20,7 +14,11 @@
 </template>
     
 <script>
-import axios from 'axios';
+import axios from '@/services/axios';
+import { createToaster } from "@meforma/vue-toaster";
+import navbarVue from './navbar.vue';
+
+// const toaster = createToaster({ /* options */ });
 export default {
     name: "updateEmployee",
     data() {
@@ -30,8 +28,13 @@ export default {
                 position: '',
                 address: '',
                 contact: ''
-            }
+            },
+            toaster : createToaster({ })
+
         }
+    },
+    components:{
+        navbarVue
     },
 
     methods:{
@@ -44,7 +47,13 @@ export default {
     });
     if(result.status==200){
         
-         this.$router.push({name:'home'})
+        this.toaster.success(result.data,{
+            position: 'top-right',
+            duration:1200
+        })
+        
+         this.$router.push({name:'home'});
+
     }
             
         }
