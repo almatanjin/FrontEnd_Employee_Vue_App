@@ -4,6 +4,11 @@ import AddEmployee from '../components/AddEmployee.vue'
 import updateEmployee from '../components/updateEmployee.vue'
 import loginVue from '../components/loginVue.vue'
 import registervue from '../components/registerVue.vue'
+import ProfileVue from '../components/ProfileVue.vue'
+import updateProfile from '../components/updateProfile.vue'
+import adminVue from '../components/adminVue.vue'
+import post from '../components/post.vue'
+import postImage from '../components/postImage.vue'
 const routes = [
   {
     path: '/',
@@ -46,6 +51,44 @@ const routes = [
     path:'/registration',
     name:'registerVue',
     component:registervue
+  },
+  {
+    path:'/Profile',
+    name:'ProfileVue',
+    component:ProfileVue,
+    meta:{
+      requiresAuth:true
+    }
+  },
+  {
+    path:'/updateprofile',
+    name:'updateProfile',
+    component:updateProfile,
+    meta:{
+      requiresAuth:true
+    }
+
+  },
+  {
+    path:'/post',
+    name:'post',
+    component:post,
+  
+
+  },
+  {
+    path:'/postImage',
+    name:'postImage',
+    component:postImage
+  },
+  {
+    path:'/admins',
+    name:'admins',
+    component:adminVue,
+    meta:{
+      requiresAuth:true
+    }
+
   }
 ]
 
